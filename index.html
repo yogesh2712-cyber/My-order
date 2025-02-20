@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MY Ordering</title>
+    <link rel="stylesheet" href="sty.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('c:/Users/Admin/Downloads/project image/image.png');
+            background-size: cover;
+            background-position: center;
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            color: white;
+        }
+        h1 { 
+            color: #020100;
+            background-color: #ffccbc;  
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            display: none; /* Hide menu initially */
+        }
+        .menu-item {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .menu-item img {
+            width: 200px; /* Increased size */
+            height: 200px; 
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .menu-item button {
+            margin-top: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .cart {
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            color: black;
+            display: none; /* Hide cart initially */
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+        }
+        .login {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login input[type="text"],
+        .login input[type="password"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .login button {
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px;
+            background: #ff5722;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        /* Order History Styles */
+        #order-history {
+            color:rgb(241, 10, 10); 
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+            max-width: 600px;
+        }
+        #order-history li {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 10px solid #4CAF50;
+            font-family: Arial, sans-serif;
+            background: rgba(255, 255, 255, 0.8);
+            color: rgb(12, 1, 1);
+        }
+        h2 {
+            color: #f31818;
+            font-size: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>MY Ordering</h1>
+    <div class="login">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Enter username">
+        <input type="password" id="password" placeholder="Enter password">
+        <button onclick="login()">Login</button>
+    </div>
+
+    <div class="menu" id="menu"></div>
+    <div class="cart">
+        <h2>Cart</h2>
+        <ul id="cart-items"></ul>
+        <h3>Total: ₹<span id="total">0</span></h3>
+        <button onclick="checkorder()"><b>Checkorder</b></button>
+    </div>
+    <div class="order-history">
+        <h2>Order History</h2>
+        <ul id="order-history"></ul>
+        <button onclick="clearOrderHistory()">Clear Order History</button>
+    </div>
+    <script>
+        const menuItems = [
+            { id: 1, name: "Burger", price: 150, image: "https://t4.ftcdn.net/jpg/02/74/99/01/360_F_274990113_ffVRBygLkLCZAATF9lWymzE6bItMVuH1.jpg" },
+            { id: 2, name: "Pizza", price: 300, image: "https://t3.ftcdn.net/jpg/00/27/57/96/360_F_27579652_tM7V4fZBBw8RLmZo0Bi8WhtO2EosTRFD.jpg" },
+            { id: 3, name: "Pasta", price: 200, image: "https://images.pexels.com/photos/1460872/pexels-photo-1460872.jpeg?cs=srgb&dl=pexels-enginakyurt-1460872.jpg&fm=jpg" },
+            { id: 4, name: "Fries", price: 100, image: "https://t4.ftcdn.net/jpg/01/26/02/33/360_F_126023380_C1VoNoSBkz0hJziJTVDUUFcOo9EgIfxL.jpg" },
+            { id: 5, name: "Salad", price: 120, image: "https://img.freepik.com/premium-photo/healthy-fresh-vegetable-salad-with-tomatoes-cucumbers-bell-peppers-plate-white-wooden-background_165656-1378.jpg" },
+            { id: 6, name: "Sandwich", price: 180, image: "https://img.freepik.com/free-photo/grilled-sandwich-with-bacon-fried-egg-tomato-lettuce-served-wooden-cutting-board_1150-42571.jpg" },
+            { id: 7, name: "Sushi", price: 350, image: "https://images.pexels.com/photos/357756/pexels-photo-357756.jpeg?cs=srgb&dl=pexels-pixabay-357756.jpg&fm=jpg" },
+            { id: 8, name: "Beriyani", price: 180, image: "https://www.shutterstock.com/image-photo/hyderabadi-chicken-biryani-aromatic-flavorful-260nw-2497040151.jpg" },
+            { id: 9, name: "Tacos", price: 250, image: "https://cdn.pixabay.com/photo/2015/11/02/20/27/taco-1018962_640.jpg" },
+            { id: 10, name: "Ice Cream", price: 90, image: "https://thumbs.dreamstime.com/b/various-varieties-ice-cream-cones-various-varieties-ice-cream-cones-mint-blueberry-strawberry-pistachio-cherry-158155767.jpg" }
+        ];
+        let cart = [];
+        let loggedIn = false;
+        let orderHistory = JSON.parse(localStorage.getItem("orders")) || [];
+
+        // order history 
+        window.onload = function () {
+            updateOrderHistory();
+        };
+
+        function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            if (username && password) {
+                loggedIn = true;
+                document.querySelector(".login").style.display = "none";
+                document.querySelector(".menu").style.display = "grid";
+                document.querySelector(".cart").style.display = "block";
+                alert("Login successful!");
+
+                // Clear order history 
+                orderHistory = [];
+                localStorage.removeItem("orders");
+                updateOrderHistory();
+            } else {
+                alert("Please enter valid credentials.");
+            }
+        }
+
+        function displayMenu() {
+            const menuDiv = document.getElementById("menu");
+            menuItems.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "menu-item";
+                div.innerHTML = `<img src="${item.image}" alt="${item.name}"> <h3>${item.name}</h3> <p>₹${item.price}</p> <button onclick="addToCart(${item.id})">Add</button>`;
+                menuDiv.appendChild(div);
+            });
+        }
+
+        function addToCart(id) {
+            if (!loggedIn) {
+                alert("Please log in to add items to the cart.");
+                return;
+            }
+            const item = menuItems.find(i => i.id === id);
+            const existingItem = cart.find(i => i.id === id);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ ...item, quantity: 1 });
+            }
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartList = document.getElementById("cart-items");
+            cartList.innerHTML = "";
+            let total = 0;
+            cart.forEach(item => {
+                const li = document.createElement("li");
+                li.className = "cart-item";
+                li.innerHTML = `${item.name} (x${item.quantity}) - ₹${item.price * item.quantity} <button onclick="removeFromCart(${item.id})">Remove</button>`;
+                cartList.appendChild(li);
+                total += item.price * item.quantity;
+            });
+            document.getElementById("total").textContent = total;
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCart();
+        }
+
+        function checkorder() {
+            if (!loggedIn) {
+                alert("Please log in to place an order.");
+                return;
+            }
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+            saveOrder();
+            alert("Order placed successfully!");
+        }
+
+        function saveOrder() {
+            const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const order = { id: Date.now(), items: [...cart], total: totalPrice };
+            orderHistory.push(order);
+            localStorage.setItem("orders", JSON.stringify(orderHistory));
+            updateOrderHistory();
+            cart = [];
+            updateCart();
+        }
+
+        function updateOrderHistory() {
+            const orderList = document.getElementById("order-history");
+            orderList.innerHTML = "";
+            orderHistory.forEach((order, index) => {
+                const li = document.createElement("li");
+                li.innerHTML = `Order ID: ${order.id}, Items: ${order.items.map(i => `${i.name} x${i.quantity}`).join(", ")}, Total: ₹${order.total} <button onclick="removeOrder(${index})">Remove</button>`;
+                orderList.appendChild(li);
+            });
+        }
+
+        function removeOrder(index) {
+            orderHistory.splice(index, 1);
+            localStorage.setItem("orders", JSON.stringify(orderHistory));
+            updateOrderHistory();
+        }
+
+        function clearOrderHistory() {
+            localStorage.removeItem("orders");
+            orderHistory = [];
+            updateOrderHistory();
+        }
+
+        displayMenu();
+    </script>
+</body>
+</html>
