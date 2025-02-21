@@ -4,15 +4,15 @@ const productsFetch = async () => {
     const response = await fetch(URL);
     const data = await response.json();
     for (let product of data) {
-        addProducts(product)            
+        addProducts(product)
     }
-    
+
 }
 
 
 productsFetch()
 
-const addProducts = (product) =>{
+const addProducts = (product) => {
     const title = shortTitle(product.title);
 
     const container = document.querySelector(".container");
@@ -27,14 +27,38 @@ const addProducts = (product) =>{
         </div>
         <span>$ ${product.price}</span>
         <div class="btn">
-            <button>Add To cart</button>
+            <button id="${product.id}" >Add To cart</button>
         </div>
     `;
 
     container.appendChild(card);
+    const button = card.querySelector("button")
+    button.addEventListener("click", async (e) => {
+        e.preventDefault();
+        let id = e.target.id;
+        const response = await fetch(`${URL}/${id}`)
+        const item = await response.json()
+        const productItem = {
+            id: item.id,
+            title: item.title,
+            image: item.image,
+            price: item.price,
+        }
+
+        addToCart(productItem);
+    })
+
+
+}
+
+function addToCart(product) {
+    let cartItem = JSON.parse(localStorage.getItem("cart")) || [];
+
+    cartItem.push(product)
+    localStorage.setItem("cart",JSON.stringify(cartItem));
 }
 
 const shortTitle = (title) => {
     const maxLength = 40;
-    return title.length > maxLength ? title.substring(0,maxLength)+" ..." : title;
+    return title.length > maxLength ? title.substring(0, maxLength) + " ..." : title;
 }
